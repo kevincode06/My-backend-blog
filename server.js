@@ -14,7 +14,7 @@ app.use(cors({ origin: "http://localhost:3000" })); // Allow frontend to access 
 app.use(express.json());
 
 // Database connection pool
-const db = mysql.createPool({
+const db = mysql.createPool({ 
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
