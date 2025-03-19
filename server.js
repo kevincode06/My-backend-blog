@@ -11,9 +11,14 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // Enable CORS for both local and production
-app.use(cors({
-  origin: ["http://localhost:3000", "https://my-frontend-blog-lac.vercel.app"] // Allow frontend from both local and production
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000", // Local frontend URL
+      "https://my-frontend-blog-lac.vercel.app", // Production frontend URL
+    ], // Allow frontend from both local and production
+  })
+);
 app.use(express.json());
 
 // Database connection pool
@@ -85,7 +90,7 @@ app.delete("/posts/:id", async (req, res) => {
     }
 
     const deleteSql = "DELETE FROM posts WHERE id = ?";
-    await query(deleteSql, [id]); 
+    await query(deleteSql, [id]);
 
     res.json({ message: "Post deleted successfully" });
 
