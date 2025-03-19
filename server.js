@@ -89,7 +89,7 @@ app.delete("/posts/:id", async (req, res) => {
     }
 
     const deleteSql = "DELETE FROM posts WHERE id = ?";
-    await query(deleteSql, [id]);
+    await query(deleteSql, [id]); 
 
     res.json({ message: "Post deleted successfully" });
 
