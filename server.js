@@ -5,7 +5,7 @@ const dotenv = require("dotenv");
 const util = require("util");
 const Joi = require("joi");
 
-dotenv.config(); // Load environment variables
+dotenv.config(); // 
 
 const app = express();
 const port = process.env.PORT || 5000;
