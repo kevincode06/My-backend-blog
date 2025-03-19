@@ -15,12 +15,12 @@ app.use(express.json());
 
 // Database connection pool
 const db = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10000,
+  host:process.env.DB_HOST,
+  user:process.env.DB_USER,
+  password:process.env.DB_PASSWORD,
+  database:process.env.DB_NAME,
+  port: process.env.DB_PORT,
+  connectTimeout: 30000,
 });
 
 // Convert db.query into a promise-based function
@@ -42,7 +42,7 @@ const postSchema = Joi.object({
 // Get all posts
 app.get("/posts", async (req, res) => {
   try {
-    const posts = await query("SELECT * FROM posts");
+    const posts = await query("SELECT * FROM railway.posts");
     console.log("Database posts:", posts); // Debugging log
     res.json(Array.isArray(posts) ? posts : []); // Ensure response is an array
   } catch (err) {
