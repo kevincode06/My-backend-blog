@@ -65,6 +65,7 @@ app.post("/posts", async (req, res) => {
     const sql = "INSERT INTO posts (name, surname, title, content) VALUES (?, ?, ?, ?)";
     
     const result = await query(sql, [name, surname, title, content]);
+    console.log("Post inserted successfully:", result);
     res.json({ message: "Post added successfully", postId: result.insertId });
 
   } catch (err) {
