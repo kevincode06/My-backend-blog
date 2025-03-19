@@ -11,7 +11,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // Enable CORS for both local and production
-app.use(
+app.use( 
   cors({
     origin: [
       "http://localhost:3000", // Local frontend URL
