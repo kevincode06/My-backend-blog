@@ -10,8 +10,10 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Allow requests from specific origin
-app.use(cors({ origin: ["http://localhost:3000", "https://my-frontend-blog-lac.vercel.app"] })); // Adjust this line to include both localhost and your deployed frontend
+// Enable CORS for both local and production
+app.use(cors({
+  origin: ["http://localhost:3000", "https://my-frontend-blog-lac.vercel.app"] // Allow frontend from both local and production
+}));
 app.use(express.json());
 
 // Database connection pool
@@ -27,11 +29,6 @@ const db = mysql.createPool({
 // Convert db.query into a promise-based function
 const query = util.promisify(db.query).bind(db);
 
-// Default route
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-
 // Validation Schema using Joi
 const postSchema = Joi.object({
   name: Joi.string().min(2).required(),
@@ -43,9 +40,8 @@ const postSchema = Joi.object({
 // Get all posts
 app.get("/posts", async (req, res) => {
   try {
-    const posts = await query("SELECT * FROM railway.posts");
-    console.log("Database posts:", posts); // Debugging log
-    res.json(Array.isArray(posts) ? posts : []); // Ensure response is an array
+    const posts = await query("SELECT * FROM posts");
+    res.json(Array.isArray(posts) ? posts : []);
   } catch (err) {
     console.error("Error fetching posts:", err);
     res.status(500).json({ message: "Error fetching posts" });
@@ -55,7 +51,6 @@ app.get("/posts", async (req, res) => {
 // Add a new post
 app.post("/posts", async (req, res) => {
   try {
-    // Validate request body
     const { error } = postSchema.validate(req.body);
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
