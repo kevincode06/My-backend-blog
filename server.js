@@ -17,7 +17,7 @@ app.use(
       "http://localhost:3000",
       "https://my-frontend-blog-lac.vercel.app",
       // Add any other frontend URLs here
-    ],
+    ], 
     methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
     credentials: true,
   })
