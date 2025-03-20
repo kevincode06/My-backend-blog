@@ -10,25 +10,42 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Enable CORS for both local and production
-app.use( 
+// Enhanced CORS configuration
+app.use(
   cors({
     origin: [
-      "http://localhost:3000", // Local frontend URL
-      "https://my-frontend-blog-lac.vercel.app", // Production frontend URL
-    ], // Allow frontend from both local and production
+      "http://localhost:3000",
+      "https://my-frontend-blog-lac.vercel.app",
+      // Add any other frontend URLs here
+    ],
+    methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
+    credentials: true,
   })
 );
+
 app.use(express.json());
 
-// Database connection pool
+// Database connection with improved error handling
 const db = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  port: process.env.DB_PORT,
+  port: process.env.DB_PORT || 3306,
   connectTimeout: 30000,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+});
+
+// Test database connection
+db.getConnection((err, connection) => {
+  if (err) {
+    console.error("Database connection failed:", err);
+    return;
+  }
+  console.log("Database connected successfully");
+  connection.release();
 });
 
 // Convert db.query into a promise-based function
@@ -42,6 +59,11 @@ const postSchema = Joi.object({
   content: Joi.string().min(5).required(),
 });
 
+// Add a health check endpoint
+app.get("/", (req, res) => {
+  res.json({ status: "ok", message: "Server is running" });
+});
+
 // Get all posts
 app.get("/posts", async (req, res) => {
   try {
@@ -49,13 +71,15 @@ app.get("/posts", async (req, res) => {
     res.json(Array.isArray(posts) ? posts : []);
   } catch (err) {
     console.error("Error fetching posts:", err);
-    res.status(500).json({ message: "Error fetching posts" });
+    res.status(500).json({ message: "Error fetching posts", error: err.message });
   }
 });
 
 // Add a new post
 app.post("/posts", async (req, res) => {
   try {
+    console.log("Received post request with body:", req.body);
+    
     const { error } = postSchema.validate(req.body);
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
@@ -70,7 +94,7 @@ app.post("/posts", async (req, res) => {
 
   } catch (err) {
     console.error("Error inserting post:", err);
-    res.status(500).json({ message: "Error inserting post", error: err });
+    res.status(500).json({ message: "Error inserting post", error: err.message });
   }
 });
 
@@ -97,8 +121,17 @@ app.delete("/posts/:id", async (req, res) => {
 
   } catch (err) {
     console.error("Error deleting post:", err);
-    res.status(500).json({ message: "Error deleting post", error: err });
+    res.status(500).json({ message: "Error deleting post", error: err.message });
   }
+});
+
+// Handle OPTIONS requests explicitly
+app.options("*", cors());
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ message: "Internal server error", error: err.message });
 });
 
 // Start server
